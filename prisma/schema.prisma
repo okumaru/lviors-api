@@ -1,0 +1,31 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "mysql"
+  url      = env("DATABASE_URL")
+}
+
+model tblusers {
+  id       Int        @id @default(autoincrement())
+  name     String     @db.VarChar(100)
+  username String     @db.VarChar(100)
+  email    String     @db.VarChar(100)
+  password String     @db.VarChar(100)
+  photo    String?    @db.VarChar(100)
+  tblposts tblposts[]
+}
+
+model tblposts {
+  id       Int      @id @default(autoincrement())
+  name     String   @db.VarChar(100)
+  caption  String?  @db.VarChar(100)
+  tags     String?  @db.VarChar(100)
+  photo    String?  @db.VarChar(100)
+  likes    Int?     @default(0)
+  userid   Int
+  tblusers tblusers @relation(fields: [userid], references: [id], onUpdate: Restrict, map: "tblposts_FK")
+
+  @@index([userid], map: "tblposts_FK")
+}
