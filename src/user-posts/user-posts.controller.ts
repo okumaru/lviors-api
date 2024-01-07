@@ -64,7 +64,8 @@ export class UserPostsController {
   ) {
     try {
 
-      updatePostDto.photo = photo.path;
+      if (photo)
+        updatePostDto.photo = photo.path;
 
       await this.userPostService.update(
         Number(userid),
@@ -128,19 +129,35 @@ export class UserPostsController {
   @Get()
   @HttpCode(200)
   async findAll(
-    @Query() queries: FetchUserPostQueriesDto,
-    @Body() conditions: FetchUserPostConditionsDto
+    @Param('userid') userid: number,
+    @Query() queries: FetchUserPostQueriesDto & FetchUserPostConditionsDto,
   ) {
     try {
 
+      const page = Number(queries.page ?? 1);
       const take = Number(queries.limit ?? 10);
-      const skip = (Number(queries.page ?? 1) - 1) * Number(queries.limit ?? 10);
+      const skip = (page - 1) * take;
+      const conditions = {
+        name: queries.name,
+        caption: queries.caption,
+        tags: queries.tags,
+      }
 
-      return await this.userPostService.findAll(
+      const userPostTotal = await this.userPostService.count(Number(userid), conditions);
+      const totalPages = Math.ceil(Number(userPostTotal) / take);
+
+      const userPost = await this.userPostService.findAll(
         take,
         skip,
+        Number(userid),
         conditions
       );
+
+      return {
+        curr_page: page,
+        total_page: totalPages,
+        data: userPost
+      }
 
     } catch (e) {
       throw new HttpException(

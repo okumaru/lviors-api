@@ -65,19 +65,33 @@ export class PostsController {
   @Get()
   @HttpCode(200)
   async findAll(
-    @Query() queries: FetchPostQueriesDto,
-    @Body() conditions: FetchPostConditionsDto
+    @Query() queries: FetchPostQueriesDto & FetchPostConditionsDto,
   ) {
     try {
 
+      const page = Number(queries.page ?? 1);
       const take = Number(queries.limit ?? 10);
-      const skip = (Number(queries.page ?? 1) - 1) * Number(queries.limit ?? 10);
+      const skip = (page - 1) * take;
+      const conditions = {
+        name: queries.name,
+        caption: queries.caption,
+        tags: queries.tags,
+      }
 
-      return await this.postService.findAll(
+      const userPostTotal = await this.postService.count(conditions);
+      const totalPages = Math.ceil(Number(userPostTotal) / take);
+
+      const posts = await this.postService.findAll(
         take,
         skip,
         conditions
       );
+
+      return {
+        curr_page: page,
+        total_page: totalPages,
+        data: posts
+      }
 
     } catch (e) {
       throw new HttpException(

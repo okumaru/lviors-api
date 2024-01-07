@@ -28,7 +28,15 @@ export class UserAuthController {
       const randomOne = randomStr(randomLen);
       const randomTwo = randomStr(randomLen);
 
-      return randomLen + randomOne + user.id + randomTwo;
+      return JSON.stringify({
+        user: {
+          name: user.name,
+          username: user.username,
+          email: user.email,
+          photo: user.photo
+        },
+        token: randomLen + randomOne + user.id + randomTwo
+      });
 
     } catch (e) {
       throw new HttpException(

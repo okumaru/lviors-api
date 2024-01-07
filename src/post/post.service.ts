@@ -32,6 +32,20 @@ export class PostService extends DBClient {
     })
   }
 
+  async count(conditions?: FetchPostConditionsDto): Promise<Number>  {
+    const posts = await this.prisma.tblposts.findMany({
+      where: {
+        name: conditions?.name,
+        caption: conditions?.caption,
+        tags: conditions?.tags ? {
+          contains: conditions?.tags
+        } : undefined
+      }
+    });
+
+    return posts.length;
+  }
+
   async findAll( 
     take: number,
     skip: number, 

@@ -54,15 +54,35 @@ export class UserPostService extends DBClient {
     })
   }
 
+  async count(
+    userid: number, 
+    conditions?: FetchUserPostConditionsDto
+  ): Promise<Number>  {
+    const posts = await this.prisma.tblposts.findMany({
+      where: {
+        userid,
+        name: conditions?.name,
+        caption: conditions?.caption,
+        tags: conditions?.tags ? {
+          contains: conditions?.tags
+        } : undefined
+      }
+    });
+
+    return posts.length;
+  }
+
   async findAll( 
     take: number,
     skip: number, 
+    userid: number, 
     conditions?: FetchUserPostConditionsDto,
   ): Promise<tblposts[] | undefined> {
     return await this.prisma.tblposts.findMany({
       skip: skip,
       take: take,
       where: {
+        userid,
         name: conditions?.name,
         caption: conditions?.caption,
         tags: conditions?.tags ? {
